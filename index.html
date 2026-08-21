@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bipa.ai - Identificador de Produtos Obramax</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+          colors: { obramax: { orange: '#FF5500', orangeDark: '#E04B00', navy: '#002B49' } }
+        }
+      }
+    }
+  </script>
+
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col items-center justify-start transition-colors duration-200">
+
+  <header class="w-full max-w-md bg-white border-b-2 border-slate-200 px-4 py-3 sticky top-0 z-40 shadow-sm flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-10 h-10 rounded-xl bg-[#001E3D] border-2 border-[#00A3E0] relative flex items-center justify-center shadow-md overflow-hidden flex-shrink-0">
+        <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="50" x2="100" y2="50" stroke="#00A3E0" stroke-width="3.5"/>
+          <circle cx="2" cy="50" r="4" fill="#00A3E0"/>
+          <circle cx="98" cy="50" r="4" fill="#00A3E0"/>
+          <polygon points="30,19 70,19 50,41" fill="#FF5500"/>
+          <polygon points="28,27 22,76 35,76 50,65 65,76 78,76 72,27 50,49" fill="#FFFFFF"/>
+        </svg>
+      </div>
+      <span class="font-[900] uppercase tracking-tighter text-2xl leading-none text-[#001E3D] flex items-center">
+        BIPA<span class="text-obramax-orange font-[900] text-xl ml-0.5">.AI</span>
+      </span>
+    </div>
+  </header>
+
+  <main class="w-full max-w-md flex-1 flex flex-col relative pb-6">
+
+    <!-- SCREEN 1: CAPTURA -->
+    <section id="screenCapture" class="flex-1 flex flex-col justify-between p-4 min-h-[calc(100vh-70px)]">
+      <div id="viewportBox" class="relative flex-1 rounded-3xl overflow-hidden border-2 border-slate-300 bg-white shadow-lg flex flex-col items-center justify-center min-h-[380px]">
+        <div class="absolute inset-0 bg-grid-dots opacity-70"></div>
+        <div id="flashlightOverlay" class="absolute inset-0 bg-yellow-100/40 backdrop-brightness-110 pointer-events-none opacity-0 transition-opacity duration-150"></div>
+
+        <div class="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+          <button id="btnFlashlight" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-white/90 text-slate-800 border border-slate-300 shadow-sm transition btn-active">
+            <i id="flashIcon" class="fa-solid fa-bolt"></i>
+            <span id="flashText">LANTERNA</span>
+          </button>
+
+          <div class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-mono font-black text-slate-800 border border-slate-300 flex items-center gap-1.5 shadow-sm">
+            <span id="apiStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span id="apiStatusText">VERIFICANDO IA...</span>
+          </div>
+        </div>
+
+        <div class="relative w-64 h-64 sm:w-72 sm:h-72 border-2 border-dashed border-obramax-orange rounded-3xl flex items-center justify-center p-4 bg-orange-50/20">
+          <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-obramax-orange rounded-tl-xl"></div>
+          <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-obramax-orange rounded-tr-xl"></div>
+          <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-obramax-orange rounded-bl-xl"></div>
+          <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-obramax-orange rounded-br-xl"></div>
+
+          <div id="scanLine" class="hidden absolute left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-obramax-orange to-transparent shadow-[0_0_15px_#FF5500] animate-scan z-10"></div>
+
+          <div id="emptyState" class="flex flex-col items-center justify-center text-center gap-3">
+            <i class="fa-solid fa-camera-retro text-5xl text-slate-300"></i>
+            <span class="text-xs font-black text-slate-500">Nenhuma imagem capturada</span>
+          </div>
+
+          <img id="capturedPhoto" class="hidden w-full h-full object-contain rounded-2xl" alt="Foto capturada do produto">
+        </div>
+
+        <div id="mlProcessingOverlay" class="hidden absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center z-20 p-6 text-center">
+          <div class="w-16 h-16 border-4 border-obramax-orange border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div class="text-lg font-black text-slate-900">Processando Visão Computacional</div>
+          <div id="scanStepText" class="text-xs font-mono text-obramax-orange mt-2 font-black">Extraindo contornos e malha 3D...</div>
+          <div class="w-full bg-slate-200 h-2.5 rounded-full mt-4 overflow-hidden max-w-xs border border-slate-300">
+            <div id="scanProgressBar" class="bg-obramax-orange h-full transition-all duration-150 w-0"></div>
+          </div>
+        </div>
+      </div>
+
+      <input id="fileInput" type="file" accept="image/*" capture="environment" hidden>
+
+      <div class="mt-3 flex flex-col gap-2">
+        <button id="captureButton" type="button" class="w-full py-4 rounded-2xl font-black text-xl text-white bg-obramax-orange hover:bg-obramax-orangeDark shadow-xl shadow-orange-600/30 flex items-center justify-center gap-3 transition btn-active border-2 border-orange-500">
+          <i class="fa-solid fa-camera text-2xl"></i>
+          <span>TIRAR FOTO E IDENTIFICAR</span>
+        </button>
+        <p id="captureMessage" class="text-center text-xs font-bold text-obramax-orange min-h-[16px]"></p>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: MATCH -->
+    <section id="screenMatch" class="hidden flex-1 flex flex-col p-4 gap-3">
+      <div class="p-4 rounded-2xl bg-white border-2 border-slate-200 shadow-sm flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-black uppercase text-slate-500 tracking-wider">Produto Identificado</span>
+          <span id="matchConfidence" class="text-[10px] font-black uppercase text-obramax-orange tracking-wider"></span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <img id="matchThumb" class="w-16 h-16 rounded-xl object-cover bg-slate-900 border-2 border-obramax-orange flex-shrink-0 shadow" alt="Foto do produto identificado">
+          <div>
+            <h2 id="matchProductName" class="text-base sm:text-lg font-black text-slate-900 leading-tight"></h2>
+            <span id="matchCategory" class="text-[11px] font-bold text-slate-500">Conexões PVC Fortlev</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <span class="text-[10px] text-slate-500 font-bold block uppercase">Código EAN da Bitola Selecionada</span>
+            <span id="matchSkuText" class="text-sm font-mono font-black text-slate-900"></span>
+          </div>
+        </div>
+
+        <div class="border-t-2 border-slate-100 pt-3">
+          <label class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-ruler-horizontal text-obramax-orange"></i>
+              <span>Bitolas Disponíveis (ficha técnica):</span>
+            </span>
+          </label>
+
+          <div id="bitolaGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3"></div>
+
+          <div class="bg-slate-900 text-white rounded-2xl p-3.5 flex flex-col items-center justify-center shadow-lg border-2 border-obramax-orange">
+            <div class="w-full flex items-center justify-between mb-2 pb-2 border-b border-slate-800 text-[11px] font-bold">
+              <span class="text-orange-400 flex items-center gap-1 font-mono font-black">
+                <i class="fa-solid fa-barcode"></i>
+                <span id="barcodeLabelBitola">BITOLA SELECIONADA</span>
+              </span>
+            </div>
+
+            <div class="w-full bg-white p-3 rounded-xl border border-slate-300 flex flex-col items-center justify-center">
+              <svg id="barcodeSvg" class="w-full h-12 max-w-[240px]" viewBox="0 0 200 50" preserveAspectRatio="none"></svg>
+              <span id="barcodeEanCodeText" class="text-xs font-mono font-black text-slate-900 tracking-[0.25em] mt-1.5"></span>
+            </div>
+
+            <div class="w-full flex items-center justify-between mt-2.5 pt-2 border-t border-slate-800">
+              <div class="flex flex-col">
+                <span class="text-[9px] text-slate-400 uppercase font-black">EAN-13 da Bitola</span>
+                <span id="barcodeFooterEan" class="text-xs font-mono font-black text-white"></span>
+              </div>
+
+              <button id="copyButton" type="button" class="flex items-center gap-1 text-[11px] font-black text-orange-400 hover:text-orange-300 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 transition btn-active">
+                <i id="copyIcon" class="fa-solid fa-copy"></i>
+                <span id="copyBtnText">Copiar EAN</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-auto pt-2 flex items-center gap-2">
+        <button id="newPhotoButton" type="button" class="w-full py-4 rounded-2xl bg-obramax-orange hover:bg-obramax-orangeDark text-white font-black text-sm transition text-center border-2 border-orange-500 shadow-md shadow-orange-600/20 btn-active uppercase">
+          Nova Foto
+        </button>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

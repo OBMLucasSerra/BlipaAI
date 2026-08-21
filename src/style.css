@@ -1,0 +1,24 @@
+body {
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Textura de pontos no visor da câmera */
+.bg-grid-dots {
+  background-image: radial-gradient(#CBD5E1 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+/* Animação da linha de scan a laser */
+@keyframes scanBeam {
+  0%, 100% { top: 10%; }
+  50% { top: 85%; }
+}
+.animate-scan {
+  animation: scanBeam 1.8s infinite ease-in-out;
+}
+
+.btn-active:active {
+  transform: scale(0.97);
+}
