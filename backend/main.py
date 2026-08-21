@@ -15,7 +15,14 @@ MODEL_PATH = BASE_DIR / "model" / "keras_model.h5"
 LABELS_PATH = BASE_DIR / "model" / "labels.txt"
 IMAGE_SIZE = (224, 224)
 app = FastAPI(title="Bipa.ai Vision API")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
+# Origens padrão (dev local + site publicado no GitHub Pages); ALLOWED_ORIGINS permite sobrescrever em produção.
+DEFAULT_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://obmlucasserra.github.io",
+]
+origins = os.environ.get("ALLOWED_ORIGINS", "").split(",") if os.environ.get("ALLOWED_ORIGINS") else DEFAULT_ORIGINS
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["*"], allow_headers=["*"])
 model = keras.models.load_model(MODEL_PATH) if MODEL_PATH.exists() else None
 labels = [line.strip() for line in LABELS_PATH.read_text(encoding="utf-8").splitlines() if line.strip()] if LABELS_PATH.exists() else []
 

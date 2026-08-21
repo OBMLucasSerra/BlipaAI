@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+node_modules
+dist
+public
+src
+index.html
+package.json
+package-lock.json
+vite.config.js
+test-image.jpg
+README.md
